@@ -3,7 +3,7 @@ project(INFO0027-Project_1)
 
 set(CMAKE_C 11)
 
-add_executable(INFO0027 src/main.c
+add_executable(Boggle   src/main.c
                         src/hashtable/hash.h src/hashtable/hash.c
                         src/hashtable/hashtable_char_int.h src/hashtable/hashtable_char_int.c
                         src/hashtable/hashtable_char_node.h src/hashtable/hashtable_char_node.c

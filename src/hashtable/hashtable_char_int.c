@@ -15,11 +15,12 @@ void Bucket_CI_free(Bucket_CI element) {
 }
 
 
-HashTable_CI HashTable_CI_create(int size) {
+HashTable_CI HashTable_CI_create() {
+    int size = 5;
     HashTable_CI table;
     table = malloc(sizeof(HashTable_CI *));
-    table->size = size;
-    table->isEmpty = 1;
+    table->size = 5;
+    table->used = 0;
     table->elements = malloc(sizeof(Bucket_CI) * size);
     for (int i=0; i < size; i++) {
         table->elements[i] = NULL;
@@ -28,17 +29,39 @@ HashTable_CI HashTable_CI_create(int size) {
 }
 
 int HashTable_CI_isEmpty(HashTable_CI table) {
-    return table->isEmpty;
+    if (table->used == 0) {
+        return 1;
+    }
+    return 0;
 }
 
 void HashTable_CI_add(HashTable_CI table, char key, int value) {
-    table->isEmpty = 0;
+    if (table->used * 2 >= table->size) {
+        // if we have used more than the half of the hashtable we double it's size (for efficiency reason
+        Bucket_CI * elementsTmp = malloc(sizeof(Bucket_CI) * table->size * 2);
+        for (int i = 0; i < table->size * 2; ++i) {
+            elementsTmp[i] = NULL;
+        }
+        for (int i=0; i < table->size; i++) {
+            if (table->elements[i] != NULL) {
+                int insertPosition = hashChar(table->size, table->elements[i]->key);
+                while (table->elements[insertPosition]) {
+                    insertPosition++;
+                }
+                elementsTmp[i] = table->elements[i];
+            }
+        }
+        free(table->elements);
+        table->elements = elementsTmp;
+        table->size = table->size * 2;
+    }
     Bucket_CI element = Bucket_CI_create(key, value);
     int insertPosition = hashChar(table->size, key);
     while (table->elements[insertPosition]) {
         insertPosition++;
     }
     table->elements[insertPosition] = element;
+    table->used++;
 }
 
 int HashTable_CI_exist(HashTable_CI table, char key){
@@ -61,6 +84,17 @@ int HashTable_CI_find(HashTable_CI table, char key) {
         findPosition++;
     }
     return NOTFOUNDINT;
+}
+
+void HashTable_CI_edit(HashTable_CI table, char key, int newValue){
+    int findPosition = hashChar(table->size, key);
+    while (findPosition < table->size) {
+        if (table->elements[findPosition] && table->elements[findPosition]->key == key) {
+            table->elements[findPosition]->value = newValue;
+            return;
+        }
+        findPosition++;
+    }
 }
 
 void HashTable_CI_free(HashTable_CI table) {

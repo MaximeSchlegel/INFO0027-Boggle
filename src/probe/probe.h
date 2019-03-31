@@ -1,0 +1,8 @@
+//
+// Created by Altar on 19/03/2019.
+//
+
+#ifndef INFO0027_PROJECT_1_PROBE_H
+#define INFO0027_PROJECT_1_PROBE_H
+
+#endif //INFO0027_PROJECT_1_PROBE_H
