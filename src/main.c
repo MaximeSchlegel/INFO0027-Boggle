@@ -1,6 +1,6 @@
 #include "hashtable/hashtable_char_int.h"
-#include "tree/tree.h"
 #include "stack/stack_probe.h"
+#include "tree/tree.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +8,7 @@
 
 
 int main (int argc, char **argv) {
+    // The args must be the grid file and the dictionary file
     if (argc != 3) {
         printf("Invalid Arguments");
         return -1;
@@ -22,6 +23,11 @@ int main (int argc, char **argv) {
         printf("Can Not Open Dictionary File");
         return -1;
     }
+
+
+    // First Analysis of the grid
+    //   => extract the cells and put them in an usable form
+    //   => extract the letters available to construct the words
 
     char **grid;
     grid = malloc(sizeof(char *));
@@ -87,6 +93,10 @@ int main (int argc, char **argv) {
             //increase height by one and go to the first cell
             height++;
             width = 0;
+            if (height > maxWidth) {
+                printf("Incorrect format for the grid file");
+                return 1;
+            }
         } else if (ch == ' ') {
             printf("SPACE :\n");
             if (height == 0) {
@@ -117,6 +127,10 @@ int main (int argc, char **argv) {
             }
             //go to the next cell
             width++;
+            if (width > maxWidth) {
+                printf("Incorrect format for the grid file");
+                return 1;
+            }
         } else {
             printf("%c :\n", ch);
             int cellId = width + height * maxWidth;
@@ -144,10 +158,10 @@ int main (int argc, char **argv) {
             letterNumber[cellId]++;
             if (ch != '#') {
                 //if ch is a letter we add it to the list of the letter
-                if (HashTable_CI_exist(availableLetter, ch) == 0) {
+                int current;
+                if ((current = HashTable_CI_find(availableLetter, ch)) == NOTFOUNDINT) {
                     HashTable_CI_add(availableLetter, ch, 1);
                 } else {
-                    int current = HashTable_CI_find(availableLetter, ch);
                     HashTable_CI_edit(availableLetter, ch, current + 1);
                 }
             }
@@ -171,10 +185,71 @@ int main (int argc, char **argv) {
         }
     }
 
+
+    // Analysis of the dictionnary file
+    //   => extract the word than can be contructed with the available letters
+
+    Tree words;
+    words= Tree_create(availableLetter->size);
+    // holds the prefix tree of the available words
+
+    HashTable_CI encounterLetter;
+    encounterLetter = HashTable_CI_create();
+    //holds the encouter letter in the current word to check against the available letter
+
+    int wordLen = 0, bufferSize = 7, skipline = 0;
+    char * wordBuffer;
+    wordBuffer = malloc(sizeof(char) * 7);
+    // according to https://sci-hub.se/https://www.sciencedirect.com/science/article/pii/0378375886901692
+    // 7 is the mean of the english word length
+
+    while((ch = fgetc(gridFile)) != EOF) {
+        if (ch == '\n') {
+            if (skipline == 0) {
+                // if we don't have to skip the line we had the word to the tree
+                Tree_addWord(words, wordBuffer);
+            }
+            // at the end of the line we reinitialize the word buffer and the encounter letters
+            free(wordBuffer);
+            wordBuffer = malloc(sizeof(char) * 7);
+            HashTable_CI_free(encounterLetter);
+            encounterLetter = HashTable_CI_create();
+            wordLen = 0;
+            bufferSize = 7;
+            skipline = 0;
+        } else if (skipline == 0) {
+            int current;
+            if ((current = HashTable_CI_find(encounterLetter, ch)) == NOTFOUNDINT) {
+                HashTable_CI_add(encounterLetter, ch, 1);
+            } else {
+                HashTable_CI_edit(encounterLetter, ch, current + 1);
+            }
+            int available;
+            if ((available = HashTable_CI_find(availableLetter, ch)) == NOTFOUNDINT || available < current + 1) {
+                skipline = 1;
+            } else {
+                if (wordLen == bufferSize) {
+                    char *wordTmp;
+                    wordTmp = malloc(sizeof(char) * (wordLen + 1));
+                    for (int i = 0; i < wordLen; i++) {
+                        wordTmp[i] = wordBuffer[i];
+                    }
+                    free(wordBuffer);
+                    wordBuffer = wordTmp;
+                    bufferSize++;
+                }
+                wordBuffer[wordLen] = ch;
+                wordLen++;
+            }
+        }
+    }
+
+    printf("%i %n", words->root->isWord);
+
     printf("Program Finish !\n");
     free(grid);
     free(letterNumber);
-
     HashTable_CI_free(availableLetter);
+    HashTable_CI_free(encounterLetter);
     return 0;
 }
