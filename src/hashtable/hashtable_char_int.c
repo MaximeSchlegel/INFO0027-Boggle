@@ -1,6 +1,7 @@
 #include "hashtable_char_int.h"
 #include "hash.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 
 Bucket_CI Bucket_CI_create(char key, int value) {
@@ -98,8 +99,13 @@ void HashTable_CI_edit(HashTable_CI table, char key, int newValue){
 }
 
 void HashTable_CI_free(HashTable_CI table) {
+    if (!table) {
+        return;
+    }
     for (int i=0; i < table->size; i++) {
-        Bucket_CI_free(table->elements[i]);
+        if (table->elements[i]) {
+            Bucket_CI_free(table->elements[i]);
+        }
     }
     free(table->elements);
     free(table);

@@ -14,6 +14,7 @@ Bucket_CN Bucket_CN_create(char key, TreeNode value) {
 }
 
 void Bucket_CN_free(Bucket_CN element) {
+    TreeNode_free(element->value);
     free(element);
 }
 
@@ -67,8 +68,13 @@ TreeNode HashTable_CN_find(HashTable_CN table, char key) {
 }
 
 void HashTable_CN_free(HashTable_CN table) {
+    if (!table) {
+        return;
+    }
     for (int i=0; i < table->size; i++) {
-        Bucket_CN_free(table->elements[i]);
+        if (table->elements[i]) {
+            Bucket_CN_free(table->elements[i]);
+        }
     }
     free(table->elements);
     free(table);

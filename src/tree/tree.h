@@ -19,6 +19,8 @@ struct Tree_ {
 Tree Tree_create(int nodeSize);
 void Tree_addWord(Tree tree, char * word);
 int Tree_isWord(Tree tree, char * word);
+void Tree_free(Tree);
+void TreeNode_free(TreeNode node);
 
 
 

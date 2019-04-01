@@ -2,30 +2,37 @@
 #include <stdlib.h>
 #include <string.h>
 
-Pair_II Pair_II_create(int first, int second) {
-    Pair_II pair = malloc(sizeof(Pair_II *));
-    pair->first = first;
-    pair->second = second;
-    return pair;
-}
-
-Pair_II Pair_II_free(Pair_II pair) {
-    free(pair);
-}
-
-Probe Probe_create(int x, int y, char * prefix, TreeNode node) {
-    Probe probe = malloc(sizeof(Probe *));
-    probe->currentPosition = Pair_II_create(x, y);
-    probe->currentNode = node;
-    probe->prefix = malloc(sizeof(char) * 10);
-    strcpy(probe->prefix, prefix);
-    probe->Path = malloc(sizeof(Probe *) * 10);
-}
-
-Stack_P Stack_P_create(int capacity) {
+Stack_P Stack_P_create() {
     Stack_P stack = malloc(sizeof(Stack_P *));
-    stack->capacity = capacity;
+    stack->capacity = 5;
     stack->top = 0;
-    stack->array = malloc(sizeof(Probe) * capacity);
+    stack->array = malloc(sizeof(Probe) * 5);
+    for(int i = 0; i < 5; i++) {
+        stack->array[i] = NULL;
+    }
     return stack;
 }
+
+void Stack_P_add(Stack_P stack, Probe probe ) {
+    if (stack->top == stack->capacity - 1) {
+        Probe * arrayTmp;
+        arrayTmp = malloc(sizeof(Probe) * stack->capacity * 2);
+        for(int i = 0; i < stack->capacity; i++) {
+            arrayTmp[i] = stack->array[i];
+        }
+        for(int i = stack->capacity; i < stack->capacity * 2; i++) {
+            arrayTmp[i] = NULL;
+        }
+        stack->capacity *= 2;
+    }
+    stack->array[stack->top] = probe;
+    stack->top++;
+}
+
+Probe Stack_P_pop(Stack_P stack) {
+    stack->top--;
+    Probe tmp = stack->array[stack->top];
+    stack->array[stack->top] = NULL;
+    return tmp;
+}
+
