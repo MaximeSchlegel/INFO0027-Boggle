@@ -237,28 +237,21 @@ struct Data_ {
 
 
 int constructCandidates(Pair_II currentPosition, TreeNode currentNode, Stack_P history, Data data, Pair_II *candidates) {
-//    printf("  Construct Candidates : ");
-//    printf("%i,", currentPosition->first);
-//    printf("%i\n", currentPosition->second);
     int nCandidates = 0, x, y, cellId, validCandidate;
     TreeNode node;
 
     for (int i = -1; i < 2; i++) {
-//        printf("  %i\n", i);
         for (int j = -1; j < 2; j++) {
-//            printf("    %i\n", j);
             x = currentPosition->first + i;
             y = currentPosition->second + j;
             validCandidate = 1;
 
             if ((i != 0 || j !=0 ) && 0 <= x && x < data->width && 0 <= y && y < data->width ) {
-//                printf("      Valid Position\n");
                 //test if the cell is valid
                 cellId = x + data->width * y;
 
                 if (data->grid[cellId][0] == '#') {
                     //if the next cell contain the stop sign there no more word to search
-//                    printf("        Not valid : #\n");
                     validCandidate = 0;
                 }
 
@@ -266,7 +259,6 @@ int constructCandidates(Pair_II currentPosition, TreeNode currentNode, Stack_P h
                 for (int k=0; k < history->top && validCandidate == 1; k++){
                     //test if the cell has not already been visited
                     if (history->array[k]->first == x && history->array[k]->second == y) {
-//                        printf("        Not valid : visited\n");
                         validCandidate = 0;
                     }
                 }
@@ -275,21 +267,18 @@ int constructCandidates(Pair_II currentPosition, TreeNode currentNode, Stack_P h
                 for (int k = 0; k < data->letterNumber[cellId] && node != NOTFOUNDNODE && validCandidate == 1; k++){
                     //test if there is a node accessible with the letter on the next cell
                     if ((node = HashTable_CN_find(currentNode->children, data->grid[cellId][k])) == NOTFOUNDNODE) {
-//                        printf("        Not valid : no more word  \n");
                         validCandidate = 0;
                     }
                 }
 
                 if (validCandidate == 1) {
                     //if the candidate has pass all the test we had it to the list
-//                    printf("        Valid\n");
                     candidates[nCandidates] = Pair_II_create(x, y);
                     nCandidates++;
                 }
             }
         }
     }
-//    printf("  Done\n");
     return nCandidates;
 }
 
