@@ -238,28 +238,28 @@ struct Data_ {
 
 
 int constructCandidates(Pair_II currentPosition, TreeNode currentNode, Stack_P history, Data data, Pair_II *candidates) {
-    printf("  Construct Candidates : ");
-    printf("%i,", currentPosition->first);
-    printf("%i\n", currentPosition->second);
+//    printf("  Construct Candidates : ");
+//    printf("%i,", currentPosition->first);
+//    printf("%i\n", currentPosition->second);
     int nCandidates = 0, x, y, cellId, validCandidate;
     TreeNode node;
 
     for (int i = -1; i < 2; i++) {
-        printf("  %i\n", i);
+//        printf("  %i\n", i);
         for (int j = -1; j < 2; j++) {
-            printf("    %i\n", j);
+//            printf("    %i\n", j);
             x = currentPosition->first + i;
             y = currentPosition->second + j;
             validCandidate = 1;
 
             if ((i != 0 || j !=0 ) && 0 <= x && x < data->width && 0 <= y && y < data->width ) {
-                printf("      Valid Position\n");
+//                printf("      Valid Position\n");
                 //test if the cell is valid
                 cellId = x + data->width * y;
 
                 if (data->grid[cellId][0] == '#') {
                     //if the next cell contain the stop sign there no more word to search
-                    printf("        Not valid : #\n");
+//                    printf("        Not valid : #\n");
                     validCandidate = 0;
                 }
 
@@ -267,7 +267,7 @@ int constructCandidates(Pair_II currentPosition, TreeNode currentNode, Stack_P h
                 for (int k=0; k < history->top && validCandidate == 1; k++){
                     //test if the cell has not already been visited
                     if (history->array[k]->first == x && history->array[k]->second == y) {
-                        printf("        Not valid : visited\n");
+//                        printf("        Not valid : visited\n");
                         validCandidate = 0;
                     }
                 }
@@ -276,21 +276,21 @@ int constructCandidates(Pair_II currentPosition, TreeNode currentNode, Stack_P h
                 for (int k = 0; k < data->letterNumber[cellId] && node != NOTFOUNDNODE && validCandidate == 1; k++){
                     //test if there is a node accessible with the letter on the next cell
                     if ((node = HashTable_CN_find(currentNode->children, data->grid[cellId][k])) == NOTFOUNDNODE) {
-                        printf("        Not valid : no more word  \n");
+//                        printf("        Not valid : no more word  \n");
                         validCandidate = 0;
                     }
                 }
 
                 if (validCandidate == 1) {
                     //if the candidate has pass all the test we had it to the list
-                    printf("        Valid\n");
+//                    printf("        Valid\n");
                     candidates[nCandidates] = Pair_II_create(x, y);
                     nCandidates++;
                 }
             }
         }
     }
-    printf("  Done\n");
+//    printf("  Done\n");
     return nCandidates;
 }
 
@@ -298,7 +298,7 @@ int constructCandidates(Pair_II currentPosition, TreeNode currentNode, Stack_P h
 
 void backtrack(Pair_II currentPosition, TreeNode currentNode, char *word, int wordLen, Stack_P history, Data data) {
     if (currentNode->isWord) {
-        printf("A SOLUTION : %s !!!!!\n", word);
+        printf("%s\n", word);
         currentNode->isWord = 0;
         // we don't want to send multiple time the same word so when we have found it we don't consider it anymore
     }
@@ -323,13 +323,16 @@ void backtrack(Pair_II currentPosition, TreeNode currentNode, char *word, int wo
                 newNode = HashTable_CN_find(currentNode->children, data->grid[cellId][j]);
             }
             newWordLen = wordLen + data->letterNumber[cellId];
+            //Add the letters to the word
 
             backtrack(newPosition, newNode, word, newWordLen, history, data);
+            //Backtrack
 
             Pair_II_free(newPosition);
             for(int j = wordLen; j < data->letterNumber[cellId]; j++) {
                 word[j] = '\0';
             }
+            //remove added letters
         }
         Stack_P_pop(history);
     }
@@ -356,7 +359,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    printf("\n\nGRID ANALYSIS\n");
+//    printf("\n\nGRID ANALYSIS :\n");
     // Analysis of the grid
     //   => extract the cells and put them in an usable form
     //   => extract the letters available to construct the words
@@ -476,21 +479,21 @@ int main(int argc, char **argv) {
         }
     }
 
-    printf("grid size : %i\n", maxWidth);
-    printf("Grid :\n");
-    for (int i = 0; i < maxWidth * maxWidth; i++) {
-        for (int j = 0; j < letterNumber[i]; j++) {
-            printf("%c", grid[i][j]);
-        }
-        printf(" ");
-        if ((i + 1) % maxWidth == 0) {
-            printf("\n");
-        }
-    }
+//    printf("grid size : %i\n", maxWidth);
+//    printf("Grid :\n");
+//    for (int i = 0; i < maxWidth * maxWidth; i++) {
+//        for (int j = 0; j < letterNumber[i]; j++) {
+//            printf("%c", grid[i][j]);
+//        }
+//        printf(" ");
+//        if ((i + 1) % maxWidth == 0) {
+//            printf("\n");
+//        }
+//    }
 
 
 
-    printf("\n\nDICT ANALYSIS\n");
+//    printf("\n\nDICT ANALYSIS :\n");
     // Analysis of the dictionnary file
     //   => extract the word than can be contructed with the available letters
 
@@ -516,13 +519,13 @@ int main(int argc, char **argv) {
         if (ch == '\n') {
             if (skipline == 0) {
                 // if we don't have to skip the line we had the word to the tree
-                printf("  Word added");
+//                printf("  Word added");
                 Tree_addWord(words, wordBuffer);
                 if (wordLen > maxLen) {
                     maxLen = wordLen;
                 }
             } else {
-                printf("  Word skiped");
+//                printf("  Word skiped");
             }
             // at the end of the line we reinitialize the word buffer and the encounter letters
             free(wordBuffer);
@@ -561,17 +564,12 @@ int main(int argc, char **argv) {
                 wordLen++;
             }
         }
-        printf("%c", ch);
+//        printf("%c", ch);
     }
 
     HashTable_CI_free(encounterLetter);
     free(wordBuffer);
 
-
-    printf("%i\n", Tree_isWord(words, "CA"));
-    printf("%i\n", Tree_isWord(words, "CAB"));
-    printf("%i\n", Tree_isWord(words, "AB"));
-    printf("%i\n", Tree_isWord(words, "BA"));
 
 
     Data data = malloc(sizeof(Data *));
@@ -583,6 +581,8 @@ int main(int argc, char **argv) {
     data->dictionary = words;
 
 
+
+//    printf("\n\nSOLUTIONS :\n");
     TreeNode currentNode;
     int skipCell;
     char *word;
@@ -610,7 +610,7 @@ int main(int argc, char **argv) {
             Pair_II initialposition = Pair_II_create(width, height);
             Stack_P history = Stack_P_create();
 
-            printf("Start Backtrack : %s\n", word);
+//            printf("Start Backtrack : %s\n", word);
             backtrack(initialposition, currentNode, word,letterNumber[i], history, data);
 
             Stack_P_free(history);
@@ -630,6 +630,7 @@ int main(int argc, char **argv) {
 //    HashTable_CI_free(encounterLetter);
 //    HashTable_CI_free(encounterLetter);
 //    Tree_free(words);
-    printf("Program Finish !\n");
+
+//    printf("\n\nProgram Finish !\n");
     return 0;
 }
