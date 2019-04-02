@@ -1,6 +1,7 @@
 #include "hashtable/hashtable_char_int.h"
+#include "pair/pair_int_int.h"
 #include "probe/probe.h"
-#include "stack/stack_probe.h"
+#include "stack/stack_pair.h"
 #include "tree/tree.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,30 +9,20 @@
 
 
 typedef struct Data_ * Data;
-typedef struct History_ History;
-typedef struct Pair_II_ * Pair_II;
 
 struct Data_ {
     int width;
     char **grid;
     int *letterNumber;
     HashTable_CI availableLetter;
+    int maxLen;
     Tree dictionary;
 };
 
-struct History_ {
-    int size;
-    int used;
-    Pair_II *array;
-};
 
 
-struct Pair_II_ {
-    int first;
-    int second;
-};
+// NE MARCHE PAS MAIS JE COMPRENDS PAS POURQUOI car marche quand directement mis dans le main
 
-// NE MARCHE PAS MAIS JE COMPRENDS PAS PK
 //Data analysisGrid(FILE *gridFile) {
 //    printf("\n\nGRID ANALYSIS\n");
 //    // Analysis of the grid
@@ -245,41 +236,38 @@ struct Pair_II_ {
 //}
 
 
-Pair_II Pair_II_create(int first, int second) {
-    Pair_II pair = malloc(sizeof(Pair_II *));
-    pair->first = first;
-    pair->second = second;
-    return pair;
-}
 
-Pair_II Pair_II_free(Pair_II pair) {
-    free(pair);
-}
-
-
-
-int constructCandidates(Pair_II currentPosition, TreeNode currentNode, History history, Pair_II *candidates, Data data) {
+int constructCandidates(Pair_II currentPosition, TreeNode currentNode, Stack_P history, Data data, Pair_II *candidates) {
+    printf("  Construct Candidates : ");
+    printf("%i,", currentPosition->first);
+    printf("%i\n", currentPosition->second);
     int nCandidates = 0, x, y, cellId, validCandidate;
     TreeNode node;
 
     for (int i = -1; i < 2; i++) {
+        printf("  %i\n", i);
         for (int j = -1; j < 2; j++) {
+            printf("    %i\n", j);
             x = currentPosition->first + i;
             y = currentPosition->second + j;
             validCandidate = 1;
 
             if ((i != 0 || j !=0 ) && 0 <= x && x < data->width && 0 <= y && y < data->width ) {
+                printf("      Valid Position\n");
                 //test if the cell is valid
                 cellId = x + data->width * y;
 
                 if (data->grid[cellId][0] == '#') {
                     //if the next cell contain the stop sign there no more word to search
+                    printf("        Not valid : #\n");
                     validCandidate = 0;
                 }
 
-                //test if the cell has not already been visited
-                for (int k=0; k < history.used && validCandidate == 1; i++){
-                    if (history.array[k]->first == x && history.array[k]->second == y) {
+
+                for (int k=0; k < history->top && validCandidate == 1; k++){
+                    //test if the cell has not already been visited
+                    if (history->array[k]->first == x && history->array[k]->second == y) {
+                        printf("        Not valid : visited\n");
                         validCandidate = 0;
                     }
                 }
@@ -288,42 +276,29 @@ int constructCandidates(Pair_II currentPosition, TreeNode currentNode, History h
                 for (int k = 0; k < data->letterNumber[cellId] && node != NOTFOUNDNODE && validCandidate == 1; k++){
                     //test if there is a node accessible with the letter on the next cell
                     if ((node = HashTable_CN_find(currentNode->children, data->grid[cellId][k])) == NOTFOUNDNODE) {
+                        printf("        Not valid : no more word  \n");
                         validCandidate = 0;
                     }
                 }
 
                 if (validCandidate == 1) {
                     //if the candidate has pass all the test we had it to the list
+                    printf("        Valid\n");
                     candidates[nCandidates] = Pair_II_create(x, y);
                     nCandidates++;
                 }
             }
         }
     }
+    printf("  Done\n");
     return nCandidates;
 }
 
 
-void makeMove(int a[], int k,Data input){
-    //TODO: makeMove
-    //Update the position
-    //Update the current node in the tree;
-    //Add the letter to the word
-    //Update wordLen
-    //Add previous position to the history
-}
-void unmakeMove(int a[], int k,Data input){
-    //TODO: unmakeMove
-    //pop the last position of the history
-    //Rollback the current positon to the poped one
-    //Remove the letter from the word
-    //Update the word len
-}
 
-
-void backtrack(Pair_II currentPosition, TreeNode currentNode, char *word, int wordLen, History history, Data input) {
+void backtrack(Pair_II currentPosition, TreeNode currentNode, char *word, int wordLen, Stack_P history, Data data) {
     if (currentNode->isWord) {
-        printf("%s\n", word);
+        printf("A SOLUTION : %s !!!!!\n", word);
         currentNode->isWord = 0;
         // we don't want to send multiple time the same word so when we have found it we don't consider it anymore
     }
@@ -331,49 +306,34 @@ void backtrack(Pair_II currentPosition, TreeNode currentNode, char *word, int wo
     if (!currentNode->children->isEmpty) {
         Pair_II candidates[8];           // Candidates for next position
         int nCandidates;                 // Next position candidate count
-        nCandidates = constructCandidates(currentPosition, currentNode, history, candidates, input);
+        nCandidates = constructCandidates(currentPosition, currentNode, history, data, candidates);
+
+        Pair_II newPosition;
+        TreeNode newNode = currentNode;
+        int newWordLen, cellId;
+
+        Stack_P_add(history, currentPosition);
 
         for (int i = 0; i < nCandidates; i++) {
-            //TODO: Main loop of backtrack
-//            makeMove(candidates[i], currentNode, word, );
-//            backtrack(a, k, input);
-//            unmakeMove(a, k, input);
-//            if (finished)
-//                return;
+            newPosition = candidates[i];
+
+            cellId = newPosition->first + data->width * newPosition->second;
+            for (int j = 0; j < data->letterNumber[cellId]; j++) {
+                word[wordLen + j] = data->grid[cellId][j];
+                newNode = HashTable_CN_find(currentNode->children, data->grid[cellId][j]);
+            }
+            newWordLen = wordLen + data->letterNumber[cellId];
+
+            backtrack(newPosition, newNode, word, newWordLen, history, data);
+
+            Pair_II_free(newPosition);
+            for(int j = wordLen; j < data->letterNumber[cellId]; j++) {
+                word[j] = '\0';
+            }
         }
+        Stack_P_pop(history);
     }
 }
-
-
-
-
-
-
-// A GARDER SERVIRA A L'INITIALISATION DU BACKTRACK
-
-//for (int i = 0; i < maxWidth * maxWidth; i++) {
-//    currentNode = words->root;
-//    skipCell = 0;
-//    for (int j = 0; j < letterNumber[i] && skipCell == 0; j++) {
-//        if (grid[i][j] == '#' || HashTable_CN_isEmpty(currentNode->children)
-//            || (currentNode = HashTable_CN_find(currentNode->children, grid[i][j])) == NOTFOUNDNODE) {
-//            // we skip the sell if the symbol is the end one, the Node don't have anymore child
-//            // or if no child is accessible with the letter
-//            skipCell = 1;
-//        }
-//    }
-//    if (skipCell == 0) {
-//        // if we found a child that answer all the criteria we create a new probe that will start at that position
-//        printf("Add Probe %s\n", grid[i]);
-//        int height = i / maxWidth;
-//        int width = i % maxWidth;
-//        Probe probe = Probe_create(width, height, grid[i], currentNode);
-//        Stack_P_add(stack, probe);
-//    }
-//}
-
-
-
 
 
 
@@ -550,7 +510,7 @@ int main(int argc, char **argv) {
     // according to https://sci-hub.se/https://www.sciencedirect.com/science/article/pii/0378375886901692
     // 7 is the mean of the english word length
 
-    int wordLen = 0, bufferSize = 7, skipline = 0;
+    int wordLen = 0, maxLen = 0, bufferSize = 7, skipline = 0;
 
     while ((ch = fgetc(dictionaryFile)) != EOF) {
         if (ch == '\n') {
@@ -558,6 +518,9 @@ int main(int argc, char **argv) {
                 // if we don't have to skip the line we had the word to the tree
                 printf("  Word added");
                 Tree_addWord(words, wordBuffer);
+                if (wordLen > maxLen) {
+                    maxLen = wordLen;
+                }
             } else {
                 printf("  Word skiped");
             }
@@ -605,9 +568,10 @@ int main(int argc, char **argv) {
     free(wordBuffer);
 
 
+    printf("%i\n", Tree_isWord(words, "CA"));
+    printf("%i\n", Tree_isWord(words, "CAB"));
+    printf("%i\n", Tree_isWord(words, "AB"));
     printf("%i\n", Tree_isWord(words, "BA"));
-    printf("%i\n", Tree_isWord(words, "BAU"));
-    printf("%i\n", Tree_isWord(words, "ZAP"));
 
 
     Data data = malloc(sizeof(Data *));
@@ -615,7 +579,45 @@ int main(int argc, char **argv) {
     data->grid = grid;
     data->letterNumber = letterNumber;
     data->availableLetter = availableLetter;
+    data->maxLen = maxLen;
     data->dictionary = words;
+
+
+    TreeNode currentNode;
+    int skipCell;
+    char *word;
+
+
+
+    for (int i = 0; i < maxWidth * maxWidth; i++) {
+        currentNode = words->root;
+        skipCell = 0;
+        word = malloc(sizeof(char) * maxLen);
+        for (int j = 0; j < letterNumber[i] && skipCell == 0; j++) {
+            if (grid[i][j] == '#' || HashTable_CN_isEmpty(currentNode->children)
+            || (currentNode = HashTable_CN_find(currentNode->children, grid[i][j])) == NOTFOUNDNODE) {
+            // we skip the sell if the symbol is the end one, the Node don't have anymore child
+            // or if no child is accessible with the letter
+            skipCell = 1;
+            } else {
+                word[j] = grid[i][j];
+            }
+        }
+        if (skipCell == 0) {
+            // if we found a child that answer all the criteria we create a new probe that will start at that position
+            height = i / maxWidth;
+            width = i % maxWidth;
+            Pair_II initialposition = Pair_II_create(width, height);
+            Stack_P history = Stack_P_create();
+
+            printf("Start Backtrack : %s\n", word);
+            backtrack(initialposition, currentNode, word,letterNumber[i], history, data);
+
+            Stack_P_free(history);
+            Pair_II_free(initialposition);
+        }
+        free(word);
+    }
 
 
 
