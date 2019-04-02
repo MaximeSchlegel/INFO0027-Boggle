@@ -1,7 +1,7 @@
 #include "hashtable_char_node.h"
 #include "hash.h"
 #include <stdlib.h>
-//#include <stdio.h>
+#include <stdio.h>
 
 
 Bucket_CN Bucket_CN_create(char key, TreeNode value) {
