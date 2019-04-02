@@ -9,6 +9,5 @@ add_executable(Boggle
         src/hashtable/hashtable_char_int.h src/hashtable/hashtable_char_int.c
         src/hashtable/hashtable_char_node.h src/hashtable/hashtable_char_node.c
         src/pair/pair_int_int.h src/pair/pair_int_int.c
-        src/probe/probe.h src/probe/probe.c
         src/stack/stack_pair.h src/stack/stack_pair.c
         src/tree/tree.h src/tree/tree.c)

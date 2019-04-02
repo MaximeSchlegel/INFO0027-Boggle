@@ -1,6 +1,5 @@
 #include "hashtable/hashtable_char_int.h"
 #include "pair/pair_int_int.h"
-#include "probe/probe.h"
 #include "stack/stack_pair.h"
 #include "tree/tree.h"
 #include <stdio.h>
