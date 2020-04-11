@@ -616,7 +616,6 @@ int main(int argc, char **argv) {
 //    free(letterNumber);
 //    HashTable_CI_free(availableLetter);
 //    HashTable_CI_free(encounterLetter);
-//    HashTable_CI_free(encounterLetter);
 //    Tree_free(words);
 
 //    printf("\n\nProgram Finish !\n");

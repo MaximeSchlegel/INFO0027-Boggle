@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-Stack_P Stack_P_create() {
+Stack_P Stack_P_create(void) {
     Stack_P stack = malloc(sizeof(Stack_P *));
     stack->capacity = 5;
     stack->top = 0;

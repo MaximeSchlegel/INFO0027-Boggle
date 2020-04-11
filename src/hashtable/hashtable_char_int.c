@@ -19,7 +19,7 @@ void Bucket_CI_free(Bucket_CI element) {
 HashTable_CI HashTable_CI_create() {
     int size = 5;
     HashTable_CI table;
-    table = malloc(sizeof(HashTable_CI *));
+    table = malloc(sizeof(struct HashTable_CI_));
     table->size = 5;
     table->used = 0;
     table->elements = malloc(sizeof(Bucket_CI) * size);

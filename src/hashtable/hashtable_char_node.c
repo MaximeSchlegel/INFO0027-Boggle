@@ -20,7 +20,7 @@ void Bucket_CN_free(Bucket_CN element) {
 
 HashTable_CN HashTable_CN_create(int size) {
 //    printf("    Create HashTable\n");
-    HashTable_CN table = (HashTable_CN) malloc(sizeof(HashTable_CN *));
+    HashTable_CN table = (HashTable_CN) malloc(sizeof(struct HashTable_CN_));
     table->size = size;
     table->isEmpty = 1;
     table->elements = malloc(sizeof(Bucket_CN) * size);
